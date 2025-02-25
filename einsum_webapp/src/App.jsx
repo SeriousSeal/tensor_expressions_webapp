@@ -20,7 +20,7 @@ function App() {
     if (compressedExpression || compressedSizes) {
       // Small delay to ensure data is processed
       setTimeout(() => {
-        navigate('/web_app_tensor_expressions/', { replace: true });
+        navigate('/tensor_expressions_webapp/', { replace: true });
       }, 100);
     }
   }, [compressedExpression, compressedSizes, navigate]);

@@ -1,0 +1,56 @@
+html, body, #root, .App {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .App {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Ensure no overflow */
+  }
+  
+  header.App-header {
+    padding: 1rem;
+    background-color: #282c34;
+    color: white;
+    text-align: center;
+    flex-shrink: 0; /* Prevents the header from shrinking */
+  }
+  
+  h1 {
+    margin: 0;
+  }
+  .custom-resize-handle {
+    position: relative;
+    background-color: #e0e0e0;
+    transition: background-color 0.2s;
+  }
+  
+  .custom-resize-handle:hover {
+    background-color: #bdbdbd;
+  }
+  
+  .custom-resize-handle[data-resize-handle-active] {
+    background-color: #9e9e9e;
+  }
+  
+  /* Vertical resize handle (for horizontal panel groups) */
+  [data-panel-group-direction="horizontal"] > .custom-resize-handle {
+    width: 5px;
+    cursor: col-resize;
+  }
+  
+  /* Horizontal resize handle (for vertical panel groups) */
+  [data-panel-group-direction="vertical"] > .custom-resize-handle {
+    height: 5px;
+    cursor: row-resize;
+  }

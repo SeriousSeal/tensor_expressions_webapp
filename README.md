@@ -49,6 +49,19 @@ docker-compose up
 # Access at http://localhost:4173/tensor_expressions_webapp/
 ```
 
+### Build version hosting with apache
+```bash
+# Start build
+npm run build
+
+# Build folder is dist in vite
+# Now, take all files from that newly created build folder and upload them into your_folder_name, with filezilla, for instance, in subfolder like this:
+
+#public_html/your_folder_name
+#Check in the browser!
+
+```
+
 ### GitHub Pages Deployment
 
 The project is deployed on GitHub Pages. You can find the live version at:

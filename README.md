@@ -1,8 +1,7 @@
-# tensor_expressions_webapp
+# Installation Guide
 
 ## Project Setup
-
-### 1. Install Node.js
+### Prerequisites
 ```bash
 # Add NodeSource repository
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -

@@ -1,6 +1,35 @@
 import { dimensionTypes } from './dimensionClassifier.jsx';
 
 /**
+ * Constants for node attribute names to avoid typos and improve clarity
+ */
+const NodeAttributes = {
+    // Size related
+    TENSOR_SIZE: 'tensorSize',
+    SIZE_PERCENTAGE: 'sizePercentage',
+    NORMALIZED_SIZE: 'normalizedSizePercentage',
+
+    // Operation related
+    OPERATIONS: 'operations',
+    OPERATIONS_PERCENTAGE: 'operationsPercentage',
+    NORMALIZED_OPERATIONS: 'normalizedPercentage',
+    TOTAL_OPERATIONS: 'totalOperations',
+    BYTE_ACCESSES: 'byteAccesses'
+};
+
+/**
+ * Helper function to safely set attributes on a node
+ * @param {Object} node - The node to modify
+ * @param {Object} attributes - Object containing attribute key-value pairs to set
+ */
+const setNodeAttributes = (node, attributes) => {
+    if (!node) return;
+    Object.entries(attributes).forEach(([key, value]) => {
+        node[key] = value;
+    });
+};
+
+/**
  * Helper function to calculate the product of index sizes for given dimensions
  * @param {string[]} dimensions - Array of dimension indices
  * @param {Object} indexSizes - Object containing the sizes of each index
@@ -91,10 +120,14 @@ export const calculateByteAccesses = (dimTypes, indexSizes) => {
 const calculateNodeSizes = (node, indexSizes, dataTypeSize, stats) => {
     if (!node) return;
 
-    node.tensorSize = calculateDimensionProduct(node.value, indexSizes) * dataTypeSize;
-    stats.totalTensorSize += node.tensorSize;
-    stats.maxTensorSize = Math.max(stats.maxTensorSize, node.tensorSize);
-    stats.minTensorSize = Math.min(stats.minTensorSize, node.tensorSize);
+    const tensorSize = calculateDimensionProduct(node.value, indexSizes) * dataTypeSize;
+    setNodeAttributes(node, {
+        [NodeAttributes.TENSOR_SIZE]: tensorSize
+    });
+
+    stats.totalTensorSize += tensorSize;
+    stats.maxTensorSize = Math.max(stats.maxTensorSize, tensorSize);
+    stats.minTensorSize = Math.min(stats.minTensorSize, tensorSize);
 
     calculateNodeSizes(node.left, indexSizes, dataTypeSize, stats);
     calculateNodeSizes(node.right, indexSizes, dataTypeSize, stats);
@@ -108,12 +141,17 @@ const calculateNodeSizes = (node, indexSizes, dataTypeSize, stats) => {
 const addSizePercentages = (node, stats) => {
     if (!node) return;
 
-    node.sizePercentage = (node.tensorSize / stats.totalTensorSize) * 100;
-    node.normalizedSizePercentage = normalizeToPercentage(
-        node.tensorSize,
+    const sizePercentage = (node[NodeAttributes.TENSOR_SIZE] / stats.totalTensorSize) * 100;
+    const normalizedSizePercentage = normalizeToPercentage(
+        node[NodeAttributes.TENSOR_SIZE],
         stats.minTensorSize,
         stats.maxTensorSize
     );
+
+    setNodeAttributes(node, {
+        [NodeAttributes.SIZE_PERCENTAGE]: sizePercentage,
+        [NodeAttributes.NORMALIZED_SIZE]: normalizedSizePercentage
+    });
 
     addSizePercentages(node.left, stats);
     addSizePercentages(node.right, stats);
@@ -126,9 +164,11 @@ const addSizePercentages = (node, stats) => {
 const resetTreeOperations = (node) => {
     if (!node) return;
 
-    node.operations = null;
-    node.operationsPercentage = null;
-    node.normalizedPercentage = null;
+    setNodeAttributes(node, {
+        [NodeAttributes.OPERATIONS]: null,
+        [NodeAttributes.OPERATIONS_PERCENTAGE]: null,
+        [NodeAttributes.NORMALIZED_OPERATIONS]: null
+    });
 
     resetTreeOperations(node.left);
     resetTreeOperations(node.right);
@@ -166,9 +206,15 @@ const calculateNodeOperations = (node, indexSizes, faultyNodes, binaryNodes) => 
             return { hasError: true, operations: 0 };
         }
 
-        node.byteAccesses = calculateByteAccesses(dimtypes, indexSizes);
-        node.operations = calculateOperations(dimtypes, indexSizes);
-        totalOps += node.operations;
+        const operations = calculateOperations(dimtypes, indexSizes);
+        const byteAccesses = calculateByteAccesses(dimtypes, indexSizes);
+
+        setNodeAttributes(node, {
+            [NodeAttributes.OPERATIONS]: operations,
+            [NodeAttributes.BYTE_ACCESSES]: byteAccesses
+        });
+
+        totalOps += operations;
         binaryNodes.push(node);
     }
 
@@ -184,23 +230,30 @@ const calculateNodeOperations = (node, indexSizes, faultyNodes, binaryNodes) => 
 const addOperationPercentages = (tree, binaryNodes, totalOperations) => {
     // Calculate operation percentages
     binaryNodes.forEach(node => {
-        node.operationsPercentage = (node.operations / totalOperations) * 100;
-        node.totalOperations = totalOperations;
+        const operationsPercentage = (node[NodeAttributes.OPERATIONS] / totalOperations) * 100;
+        setNodeAttributes(node, {
+            [NodeAttributes.OPERATIONS_PERCENTAGE]: operationsPercentage,
+            [NodeAttributes.TOTAL_OPERATIONS]: totalOperations
+        });
     });
 
     // Normalize operation percentages
-    const percentages = binaryNodes.map(node => node.operationsPercentage);
+    const percentages = binaryNodes.map(node => node[NodeAttributes.OPERATIONS_PERCENTAGE]);
     const minPercentage = Math.min(...percentages) || 0;
     const maxPercentage = Math.max(...percentages) || 0;
 
     const addNormalizedPercentages = (node) => {
         if (!node) return;
         if (node.left && node.right) {
-            node.normalizedPercentage = normalizeToPercentage(
-                node.operationsPercentage,
+            const normalizedPercentage = normalizeToPercentage(
+                node[NodeAttributes.OPERATIONS_PERCENTAGE],
                 minPercentage,
                 maxPercentage
             );
+
+            setNodeAttributes(node, {
+                [NodeAttributes.NORMALIZED_OPERATIONS]: normalizedPercentage
+            });
         }
         addNormalizedPercentages(node.left);
         addNormalizedPercentages(node.right);
@@ -243,7 +296,9 @@ export const calculateNodeMetrics = (indexSizes, tree, dataTypeSize) => {
     }
 
     // Set total operations on tree
-    tree.totalOperations = operations;
+    setNodeAttributes(tree, {
+        [NodeAttributes.TOTAL_OPERATIONS]: operations
+    });
 
     // Add operation percentages
     addOperationPercentages(tree, binaryNodes, operations);

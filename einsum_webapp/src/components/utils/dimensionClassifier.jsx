@@ -34,7 +34,7 @@ const PrimitiveDimType = {
     MB: 'mb',
     KB: 'kb',
     NB: 'nb',
-    RANDOM: 'random'
+    LOOP: 'loop'
 };
 
 // Processing order for primitive dimensions
@@ -307,7 +307,6 @@ class StandardDimensionClassifier extends BaseDimensionClassifier {
         this.dimType = DimType.CB;
         this.leftK?.reverse().forEach(element => {
             if (this.isElementInExistingDimension(element)) return;
-
             if (this.rightK.includes(element)) {
                 this.handleLeftKElement(element, primitive);
             } else {
@@ -325,9 +324,22 @@ class StandardDimensionClassifier extends BaseDimensionClassifier {
         // Check all dimension types
         for (const [dimType, mapping] of Object.entries(DIM_TYPE_RELATIONS)) {
             if (this.isInDimension(element, mapping.primitive, mapping.loop)) {
-                this.dimType = dimType;
+                if (this.acceptDimForPrimitive(dimType)) {
+                    this.dimType = dimType;
+                }
+                else {
+                    const currentIndex = PRIMITIVE_DIM_ORDER.indexOf(this.dimType);
+                    this.dimType = PRIMITIVE_DIM_ORDER[currentIndex + 1];
+                }
                 return true;
             }
+        }
+        if (this.acceptDimForPrimitive(DimType.KB)) {
+            this.dimType = DimType.KB;
+        }
+        else {
+            const currentIndex = PRIMITIVE_DIM_ORDER.indexOf(this.dimType);
+            this.dimType = PRIMITIVE_DIM_ORDER[currentIndex + 1];
         }
         return false;
     }
@@ -353,7 +365,6 @@ class StandardDimensionClassifier extends BaseDimensionClassifier {
         if (this.acceptDimForPrimitive(DimType.KB)) {
             primitive.push(element);
         }
-        this.dimType = DimType.KB;
     }
 
     /**
@@ -365,7 +376,6 @@ class StandardDimensionClassifier extends BaseDimensionClassifier {
         const isPrimitiveK = this.acceptDimForPrimitive(DimType.KB) &&
             primitive.includes(element) &&
             primitive[0] === element;
-
         if (isPrimitiveK) {
             this.addToPrimitive(DimType.KB, element);
             const index = primitive.indexOf(element);
@@ -375,7 +385,6 @@ class StandardDimensionClassifier extends BaseDimensionClassifier {
         } else {
             this.addToLoop(DimType.BK, element);
         }
-        this.dimType = DimType.KB;
     }
 
     /**

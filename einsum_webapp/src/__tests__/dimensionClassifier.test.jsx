@@ -131,4 +131,20 @@ describe('DimensionClassifier', () => {
         expect(result.loop.bn).toEqual(["7"]);
         expect(result.loop.bk).toEqual(["2"]);
     });
+
+    test('complex contraction pattern 5', () => {
+        const node = ["0", "1", "2", "3"];
+        const left = ["4", "2", "5", "3"];
+        const right = ["0", "1", "4", "5"];
+
+        const result = dimensionTypes(node, left, right);
+        expect(result.primitive.cb).toHaveLength(0);
+        expect(result.primitive.mb).toEqual(["3"]);
+        expect(result.primitive.nb).toEqual(["0", "1"]);
+        expect(result.primitive.kb).toEqual(["5"]);
+        expect(result.loop.bc).toHaveLength(0);
+        expect(result.loop.bm).toEqual(["2"]);
+        expect(result.loop.bn).toHaveLength(0);
+        expect(result.loop.bk).toEqual(["4"]);
+    });
 });

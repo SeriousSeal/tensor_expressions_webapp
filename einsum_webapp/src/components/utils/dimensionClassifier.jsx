@@ -284,6 +284,7 @@ class StandardDimensionClassifier extends BaseDimensionClassifier {
      */
     processRightKDimensions() {
         this.dimType = DimType.CB;
+        this.state = DimState.PRIMITIVE;
         const primitive = [];
 
         this.rightK?.reverse().forEach(element => {
@@ -305,6 +306,7 @@ class StandardDimensionClassifier extends BaseDimensionClassifier {
      */
     processLeftKDimensions(primitive) {
         this.dimType = DimType.CB;
+        this.state = DimState.PRIMITIVE;
         this.leftK?.reverse().forEach(element => {
             if (this.isElementInExistingDimension(element)) return;
             if (this.rightK.includes(element)) {
@@ -324,22 +326,29 @@ class StandardDimensionClassifier extends BaseDimensionClassifier {
         // Check all dimension types
         for (const [dimType, mapping] of Object.entries(DIM_TYPE_RELATIONS)) {
             if (this.isInDimension(element, mapping.primitive, mapping.loop)) {
+                console.log(`Element ${element} is already in dimension ${dimType}`);
                 if (this.acceptDimForPrimitive(dimType)) {
+                    console.log(`Accepting element ${element} for dimension ${dimType}`);
                     this.dimType = dimType;
                 }
-                else {
+                else if (this.state === DimState.PRIMITIVE) {
+                    console.log(`Transitioning to next dimension from ${dimType}`);
                     const currentIndex = PRIMITIVE_DIM_ORDER.indexOf(this.dimType);
                     this.dimType = PRIMITIVE_DIM_ORDER[currentIndex + 1];
+                    this.state = DimState.LOOP;
                 }
                 return true;
             }
         }
         if (this.acceptDimForPrimitive(DimType.KB)) {
+            console.log(`Accepting element ${element} for dimension ${DimType.KB}`);
             this.dimType = DimType.KB;
         }
-        else {
+        else if (this.state === DimState.PRIMITIVE) {
+            console.log(`Transitioning to next dimension from ${this.dimType} with element ${element}`);
             const currentIndex = PRIMITIVE_DIM_ORDER.indexOf(this.dimType);
             this.dimType = PRIMITIVE_DIM_ORDER[currentIndex + 1];
+            this.state = DimState.LOOP;
         }
         return false;
     }
@@ -363,6 +372,7 @@ class StandardDimensionClassifier extends BaseDimensionClassifier {
      */
     handleRightKElement(element, primitive) {
         if (this.acceptDimForPrimitive(DimType.KB)) {
+            this.state = DimState.PRIMITIVE;
             primitive.push(element);
         }
     }
@@ -377,6 +387,7 @@ class StandardDimensionClassifier extends BaseDimensionClassifier {
             primitive.includes(element) &&
             primitive[0] === element;
         if (isPrimitiveK) {
+            this.state = DimState.PRIMITIVE;
             this.addToPrimitive(DimType.KB, element);
             const index = primitive.indexOf(element);
             if (index > -1) {

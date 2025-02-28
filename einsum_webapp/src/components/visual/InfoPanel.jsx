@@ -245,9 +245,7 @@ const InfoPanel = ({
       onMouseLeave={onMouseLeave}
     >
       <div className="flex items-center justify-between mb-1 pb-2 border-b border-gray-100">
-        <h3 className="text-xl font-semibold text-gray-800">
-          Contraction Info {isTablet && "(Tablet Mode)"}
-        </h3>
+        <h3 className="text-xl font-semibold text-gray-800">Contraction Info</h3>
 
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">

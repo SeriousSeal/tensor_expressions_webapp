@@ -827,7 +827,7 @@ const EinsumTreeVisualizer = ({ initialExpression, initialSizes }) => {
         <CustomPanelResizeHandle />
         <Panel minSize={getMinSizePercentage(420)}>
           <div className="p-6 h-full overflow-auto bg-white rounded-lg shadow-lg">
-            <div className="flex items-center gap-4 mb-6">
+            <div className="flex items-center gap-2 mb-6">
               <input
                 type="text"
                 placeholder="Enter einsum tree"

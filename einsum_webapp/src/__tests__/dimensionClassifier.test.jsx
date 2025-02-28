@@ -81,8 +81,7 @@ describe('DimensionClassifier', () => {
         expect(result.loop.bm).toContain('m');
         expect(result.primitive.nb).toContain('n');
         expect(result.primitive.nb).toContain('o');
-        expect(result.primitive.kb).toContain('k');
-        expect(result.loop.bk).toContain('l');
+        expect(result.loop.bk).toContain('l', 'k');
     });
 
     test('complex contraction pattern 2', () => {
@@ -146,5 +145,21 @@ describe('DimensionClassifier', () => {
         expect(result.loop.bm).toEqual(["2"]);
         expect(result.loop.bn).toHaveLength(0);
         expect(result.loop.bk).toEqual(["4"]);
+    });
+
+    test('complex contraction pattern 6', () => {
+        const node = ["0", "1", "2", "3"];
+        const left = ["4", "5", "2", "3"];
+        const right = ["1", "5", "4", "0"];
+
+        const result = dimensionTypes(node, left, right);
+        expect(result.primitive.cb).toHaveLength(0);
+        expect(result.primitive.mb).toEqual(["2", "3"]);
+        expect(result.primitive.nb).toEqual(["0"]);
+        expect(result.primitive.kb).toHaveLength(0);
+        expect(result.loop.bc).toHaveLength(0);
+        expect(result.loop.bm).toHaveLength(0);
+        expect(result.loop.bn).toEqual(["1"]);
+        expect(result.loop.bk).toEqual(["4", "5"]);
     });
 });

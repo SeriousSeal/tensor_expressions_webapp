@@ -3,8 +3,11 @@
  */
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import ReactFlow, { Background, Controls, Handle, Position, ControlButton, Panel } from 'reactflow';
+
 import { createPortal } from 'react-dom';
 import 'reactflow/dist/style.css';
+// Add custom styles to override ReactFlow controls styling
+import '../styles/FlowStyles.css';
 
 /**
  * Component Imports
@@ -73,8 +76,6 @@ const NODE_TYPES = {
           percentage = `${formatNumber(data.sizePercentage)}%`;
         }
       }
-
-
 
       return { displayLabel, nodeWidth, percentage };
     }, [data.label, data.showOperations, data.operationsPercentage, data.sizePercentage, data.metricType]);
@@ -729,29 +730,32 @@ const Flow = ({
         </Controls>
         <Background variant="dots" gap={12} size={1} />
         {!uiState.highlightMode && activeNode && (
-          <div
-            onMouseEnter={handlePanelMouseEnter}
-            onMouseLeave={handlePanelMouseLeave}
-          >
-            <InfoPanel
-              key={`${treeState.connectedNodes.value}-${treeState.connectedNodes.left?.value}-${treeState.connectedNodes.right?.value}`}
-              node={activeNode ?? uiState.hoveredNode}
-              connectedNodes={treeState.connectedNodes}
-              setConnectedNodes={setTreeState}
-              onClose={() => {
-                setUiState(prevState => ({ ...prevState, selectedNode: null, hoveredNode: null }));
-                setTreeState(prevState => ({ ...prevState, connectedNodes: [] }));
-              }}
-              initialPosition={{ x: 12, y: 8 }}
-              indexSizes={indexSizes}
-              showSizes={uiState.showSizes}
-              onToggleSizes={handleToggleSizes}
-              swapChildren={handleSwapChildren}
-              recalculateTreeAndOperations={recalculateTreeAndOperations}
-              addPermutationNode={addPermutationNode}
-              removePermutationNode={removePermutationNode}
-            />
-          </div>
+          <Panel position="top-left">
+            <div
+              onMouseEnter={handlePanelMouseEnter}
+              onMouseLeave={handlePanelMouseLeave}
+            >
+              <InfoPanel
+                key={`infopanel-${activeNode.id}`}
+                node={activeNode ?? uiState.hoveredNode}
+                connectedNodes={treeState.connectedNodes}
+                setConnectedNodes={setTreeState}
+                onClose={() => {
+                  setUiState(prevState => ({ ...prevState, selectedNode: null, hoveredNode: null }));
+                  setTreeState(prevState => ({ ...prevState, connectedNodes: [] }));
+                }}
+                initialPosition={{ x: 12, y: 8 }}
+                indexSizes={indexSizes}
+                showSizes={uiState.showSizes}
+                onToggleSizes={handleToggleSizes}
+                swapChildren={handleSwapChildren}
+                recalculateTreeAndOperations={recalculateTreeAndOperations}
+                addPermutationNode={addPermutationNode}
+                removePermutationNode={removePermutationNode}
+                isDraggablePanel={true}
+              />
+            </div>
+          </Panel>
         )}
         {uiState.showPanel && createPortal(
           <div

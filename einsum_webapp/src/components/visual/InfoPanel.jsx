@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import MiniReactFlowTree from './MiniReactFlowTree.jsx';
+import SimpleTensorTree from './SimpleTensorTree.jsx';
 import { dimensionTypes } from '../utils/dimensionClassifier.jsx';
-import { TbArrowsExchange, TbArrowsShuffle } from "react-icons/tb";
+import { TbArrowsExchange, TbArrowsShuffle, TbX } from "react-icons/tb";
 import useDeviceSize from '../utils/useDeviceSize.jsx';
 
 import { isEqual } from "lodash";
@@ -15,7 +15,6 @@ import { isEqual } from "lodash";
  * @param {Object} props.connectedNodes - Connected nodes information {value: [], left: null, right: null}
  * @param {Function} props.setConnectedNodes - Function to update connected nodes
  * @param {Function} props.onClose - Function to handle panel closure
- * @param {Object} props.initialPosition - Initial position of the panel {x: number, y: number}
  * @param {Object} props.indexSizes - Sizes of different indices
  * @param {boolean} props.showSizes - Toggle between showing indices or sizes
  * @param {Function} props.onToggleSizes - Function to toggle size display
@@ -23,30 +22,34 @@ import { isEqual } from "lodash";
  * @param {Function} props.recalculateTreeAndOperations - Function to recalculate tree layout
  * @param {Function} props.addPermutationNode - Function to add permutation node
  * @param {Function} props.removePermutationNode - Function to remove permutation node
+ * @param {boolean} props.isDraggablePanel - Whether the panel should be draggable
+ * @param {Function} props.onMouseEnter - Mouse enter handler
+ * @param {Function} props.onMouseLeave - Mouse leave handler
  */
 const InfoPanel = ({
   node,
   connectedNodes = { value: [], left: null, right: null },
   setConnectedNodes,
   onClose,
-  initialPosition,
   indexSizes,
   showSizes,
   onToggleSizes,
   swapChildren,
   recalculateTreeAndOperations,
   addPermutationNode,
-  removePermutationNode
+  removePermutationNode,
+  className = "",
+  isDraggablePanel = false,
+  onMouseEnter,
+  onMouseLeave
 }) => {
-  const { getInfoPanelDimensions } = useDeviceSize();
+  const { getInfoPanelDimensions, isTablet } = useDeviceSize();
   const dimensions = getInfoPanelDimensions();
-  const [position, setPosition] = useState(initialPosition);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const panelRef = useRef(null);
   const prevConnectedNodesRef = useRef(connectedNodes);
-
-  // Isn Bug und damit das nicht die ganze zeit in der Console rumnervt ....
 
   useEffect(() => {
     if (!isEqual(prevConnectedNodesRef.current, connectedNodes)) {
@@ -68,97 +71,6 @@ const InfoPanel = ({
     return true;
   }, [dimTypes]);
 
-  const panelStyle = {
-    position: 'absolute',
-    top: `${position.y}px`,
-    left: `${position.x}px`,
-    zIndex: 10,
-    width: `${dimensions.panelWidth}px`,
-    maxWidth: '95vw',
-    fontSize: `${dimensions.fontSize}px`,
-    padding: `${dimensions.padding}px`,
-    cursor: isDragging ? 'grabbing' : 'grab',
-    userSelect: 'none',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    backdropFilter: 'blur(5px)',
-    display: 'flex',
-    flexDirection: 'column',
-    borderRadius: '8px',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-    overflow: 'hidden',
-  };
-
-  const titleStyle = {
-    fontSize: `${dimensions.fontSize * 1.4}px`,
-    fontWeight: 'bold',
-    marginBottom: `${dimensions.padding}px`,
-    color: '#333',
-    alignItems: "center",
-  };
-
-  const letterContainerStyle = {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    marginRight: '16px',
-    marginLeft: '16px',
-    marginTop: '16px',
-  };
-
-  const letterStyle = {
-    fontSize: `${dimensions.miniFlow.letterSize}px`,
-    fontWeight: 'bold',
-    lineHeight: '1.2',
-    marginBottom: `${dimensions.padding}px`,
-  };
-
-  const reactFlowPanelStyle = {
-    display: "flex",
-    alignItems: "flex-start",
-    justifyContent: "center",
-    marginBottom: `${dimensions.padding}px`,
-    width: '100%', // Changed from maxWidth
-    margin: '0 auto',
-    paddingTop: `${dimensions.padding}px`,
-    position: 'relative',
-    overflow: 'hidden'
-  };
-
-  const tableStyle = {
-    width: '100%',
-    borderCollapse: 'separate',
-    borderSpacing: '0',
-    marginTop: `${dimensions.padding}px`,
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    overflow: 'hidden',
-    fontSize: `${dimensions.fontSize}px`,
-  };
-
-  const cellStyle = {
-    padding: `${dimensions.padding * 0.75}px`,
-    textAlign: 'center',
-    borderBottom: '1px solid #e0e0e0',
-    height: `${dimensions.fontSize * 2.5}px`,
-    position: 'relative',
-  };
-
-  const cellContentStyle = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: '100%',
-  };
-
-  const headerCellStyle = {
-    ...cellStyle,
-    backgroundColor: '#f5f5f5',
-    fontWeight: 'bold',
-    color: '#333',
-  };
-
   /**
    * Calculates the size of a dimension based on its indices
    * @param {Array} indices - Array of index identifiers
@@ -169,12 +81,13 @@ const InfoPanel = ({
     return indices.reduce((acc, index) => acc * (indexSizes[index] || 1), 1);
   };
 
-
   /**
    * Handles mouse down event for panel dragging
    * @param {MouseEvent|TouchEvent} e - Mouse or touch event
    */
   const handleMouseDown = (e) => {
+    if (!isDraggablePanel) return;
+
     // Don't initiate dragging if clicking the close button
     if (e.target.closest('button[data-close-button]')) {
       return;
@@ -183,10 +96,12 @@ const InfoPanel = ({
     const event = e.touches ? e.touches[0] : e;
     if (panelRef.current?.contains(event.target)) {
       setIsDragging(true);
+      // Calculate offset from current position, not just from the click point
       setDragOffset({
         x: event.clientX - position.x,
         y: event.clientY - position.y,
       });
+      e.preventDefault(); // Prevent text selection during drag
     }
   };
 
@@ -223,7 +138,7 @@ const InfoPanel = ({
   };
 
   useEffect(() => {
-    if (isDragging) {
+    if (isDraggablePanel && isDragging) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
       window.addEventListener('touchmove', handleTouchMove, { passive: false });
@@ -240,8 +155,7 @@ const InfoPanel = ({
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleMouseUp);
     };
-  }, [isDragging, handleMouseMove, handleTouchMove]);
-
+  }, [isDragging, handleMouseMove, handleTouchMove, isDraggablePanel]);
 
   /**
    * Handles swapping of left and right children
@@ -302,74 +216,63 @@ const InfoPanel = ({
     }
   }, [connectedNodes, setConnectedNodes, recalculateTreeAndOperations, node.id]);
 
-  const buttonContainerStyle = {
-    display: 'flex',
-    justifyContent: 'center',
-    flexWrap: 'wrap',
-    gap: `${dimensions.padding / 2}px`,
-    width: '100%',
-    padding: `${dimensions.padding / 2}px`,
-  };
-
-  const buttonStyle = {
-    fontSize: `${dimensions.fontSize * 0.95}px`,
-    padding: `${dimensions.padding * 0.5}px ${dimensions.padding * 0.75}px`,
-    whiteSpace: 'nowrap',
-    minWidth: 'fit-content',
-  };
-
-  const closeButtonStyle = {
-    width: '36px',
-    height: '36px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    touchAction: 'manipulation',
-    padding: 0,
-    marginLeft: '8px',
-    borderRadius: '50%',
-    background: 'rgba(0, 0, 0, 0.05)',
+  // Dynamic panel style for draggable panels
+  const panelDragStyle = isDraggablePanel ? {
+    transform: `translate(${position.x}px, ${position.y}px)`,
     position: 'relative',
-    minWidth: '36px', // Ensure minimum touch target size
-    minHeight: '36px', // Ensure minimum touch target size
-  };
+    cursor: isDragging ? 'grabbing' : 'grab',
+    transition: isDragging ? 'none' : 'transform 0.2s ease, box-shadow 0.2s ease'
+  } : {};
 
   return (
     <div
       ref={panelRef}
-      className="border border-gray-300 rounded shadow-md relative"
-      style={panelStyle}
+      className={`
+        bg-white/95 backdrop-blur-md rounded-lg shadow-lg 
+        border border-gray-200 overflow-hidden flex flex-col
+        select-none w-full max-w-[95vw]
+        ${isDragging ? 'shadow-xl' : ''} 
+        ${className}`}
+      style={{
+        width: `${dimensions.panelWidth}px`,
+        fontSize: `${dimensions.fontSize}px`,
+        padding: `${dimensions.padding}px`,
+        ...panelDragStyle
+      }}
       onMouseDown={handleMouseDown}
       onTouchStart={handleMouseDown}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
-      {/* Add a header container div to group title and controls */}
-      <div className="flex items-center justify-between mb-2">
-        <h3 style={titleStyle}>Contraction Info</h3>
-        <div className="flex items-center gap-2">
+      {/* Modern header with better alignment */}
+      <div className="flex items-center justify-between mb-1 pb-2 border-b border-gray-100">
+        <h3 className="text-xl font-semibold text-gray-800">Contraction Info</h3>
+
+        <div className="flex items-center gap-3">
+          {/* Modern toggle switch */}
           <div className="flex items-center gap-2">
-            <label className="text-xs text-gray-500">
+            <span className="text-xs text-gray-500 font-medium">
               {showSizes ? "Sizes" : "Indices"}
-            </label>
-            <label className="relative inline-block w-8 h-4">
+            </span>
+            <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                className="hidden"
+                className="sr-only peer"
                 checked={showSizes}
                 onChange={onToggleSizes}
               />
-              <span className="absolute cursor-pointer inset-0 rounded-full transition-colors duration-200 ease-in-out bg-gray-300">
-                <span className={`
-                  absolute h-3 w-3 rounded-full bg-white
-                  transform transition-transform duration-200 ease-in-out
-                  top-0.5 left-0.5
-                  ${showSizes ? 'translate-x-4' : 'translate-x-0'}
-                `} />
-              </span>
+              <div className="w-9 h-5 bg-gray-200 rounded-full peer                               
+                              after:content-[''] after:absolute after:top-0.5 after:left-0.5 
+                              after:bg-white after:rounded-full after:h-4 after:w-4 
+                              after:transition-all peer-checked:after:translate-x-4"></div>
             </label>
           </div>
+
+          {/* Modern close button */}
           <button
-            className="text-gray-500 hover:text-gray-700 hover:bg-gray-200 transition-colors"
-            style={closeButtonStyle}
+            className="rounded-full p-1.5 text-gray-500 hover:bg-gray-100 
+                      hover:text-gray-700 transition-colors focus:outline-none 
+                      focus:ring-2 focus:ring-gray-300"
             data-close-button="true"
             onClick={(e) => {
               e.preventDefault();
@@ -382,95 +285,94 @@ const InfoPanel = ({
               onClose();
             }}
           >
-            <svg
-              viewBox="0 0 24 24"
-              width="24"
-              height="24"
-              stroke="currentColor"
-              strokeWidth="2"
-              fill="none"
-            >
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
+            <TbX size={20} />
           </button>
         </div>
       </div>
 
-      {true && (
-        <div style={reactFlowPanelStyle}>
-          <div style={letterContainerStyle}>
-            <span style={{ ...letterStyle, color: '#62c8d3' }}>C</span>
-            <span style={{ ...letterStyle, color: '#007191' }}>M</span>
-            <span style={{ ...letterStyle, color: '#d31f11' }}>N</span>
-            <span style={{ ...letterStyle, color: '#b2df8a' }}>K</span>
-          </div>
-          <div>
-            <div className="mt-4 mb-2 flex justify-center">
-              <MiniReactFlowTree
-                key={`${connectedNodes.value}-${connectedNodes.left?.value}-${connectedNodes.right?.value}`}
-                node={connectedNodes.value}
-                left={connectedNodes.left?.value}
-                right={connectedNodes.right?.value}
-                dimTypes={dimTypes}
-                onIndicesChange={handleIndicesChange}
-                isDragging={isDragging}  // Add this prop
-              />
-            </div>
-            <div style={buttonContainerStyle}>
-              {node.data.left && node.data.right && (
-                <button
-                  className="flex items-center justify-center gap-1 bg-gray-100 hover:bg-gray-200 rounded-md text-gray-700 transition-colors duration-200"
-                  style={buttonStyle}
-                  onClick={handleSwap}
-                  title="Swap Left and Right Children"
-                >
-                  <TbArrowsExchange size={dimensions.fontSize} />
-                  <span>Swap</span>
-                </button>
-              )}
-              {!node.data.deleteAble && (
-                <button
-                  className="flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 rounded-md text-gray-700 transition-colors duration-200"
-                  style={buttonStyle}
-                  onClick={handleAddPermutation}
-                  title="Add Permutation Node"
-                >
-                  <TbArrowsShuffle size={dimensions.fontSize} />
-                  <span>Add Permutation</span>
-                </button>
-              )}
-              {node.data.deleteAble && (
-                <button
-                  className="flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 rounded-md text-gray-700 transition-colors duration-200"
-                  style={buttonStyle}
-                  onClick={handleRemovePermutation}
-                  title="Remove Permutation Node"
-                >
-                  <TbArrowsShuffle size={dimensions.fontSize} />
-                  <span>Remove Permutation</span>
-                </button>
-              )}
-            </div>
-          </div>
+      {/* Flow tree visualization */}
+      <div className="flex items-start justify-center relative overflow-hidden">
+        <div className={`flex flex-col justify-start items-center mx-3 mt-2 ${isTablet ? 'gap-2' : 'gap-3'}`}>
+          <span className="text-[#62c8d3] font-bold text-xl">C</span>
+          <span className="text-[#007191] font-bold text-xl">M</span>
+          <span className="text-[#d31f11] font-bold text-xl">N</span>
+          <span className="text-[#b2df8a] font-bold text-xl">K</span>
         </div>
-      )}
 
+        <div className="flex flex-col justify-start items-center mt-2">
+          <SimpleTensorTree
+            key={`${connectedNodes.value}-${connectedNodes.left?.value}-${connectedNodes.right?.value}`}
+            node={connectedNodes.value}
+            left={connectedNodes.left?.value}
+            right={connectedNodes.right?.value}
+            dimTypes={dimTypes}
+            onIndicesChange={handleIndicesChange}
+            isDragging={isDragging}
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-wrap justify-center w-full gap-2">
+        {node.data.left && node.data.right && (
+          <button
+            className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 
+                          hover:bg-gray-100 text-gray-700 rounded-md 
+                          transition-all shadow-sm border border-gray-200
+                          hover:shadow focus:outline-none focus:ring-2 focus:ring-gray-300"
+            onClick={handleSwap}
+            title="Swap Left and Right Children"
+          >
+            <TbArrowsExchange size={dimensions.fontSize} />
+            <span className="text-sm font-medium">Swap</span>
+          </button>
+        )}
+
+        {!node.data.deleteAble && (
+          <button
+            className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 
+                          hover:bg-gray-100 text-gray-700 rounded-md 
+                          transition-all shadow-sm border border-gray-200
+                          hover:shadow focus:outline-none focus:ring-2 focus:ring-gray-300"
+            onClick={handleAddPermutation}
+            title="Add Permutation Node"
+          >
+            <TbArrowsShuffle size={dimensions.fontSize} />
+            <span className="text-sm font-medium">Add Permutation</span>
+          </button>
+        )}
+
+        {node.data.deleteAble && (
+          <button
+            className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 
+                          hover:bg-gray-100 text-gray-700 rounded-md 
+                          transition-all shadow-sm border border-gray-200
+                          hover:shadow focus:outline-none focus:ring-2 focus:ring-gray-300"
+            onClick={handleRemovePermutation}
+            title="Remove Permutation Node"
+          >
+            <TbArrowsShuffle size={dimensions.fontSize} />
+            <span className="text-sm font-medium">Remove Permutation</span>
+          </button>
+        )}
+      </div>
+
+      {/* Modern table design */}
       {!isEmptyDimTypes && (
-        <div className={`w-full overflow-x-auto  'mt-4'}`}>
-          <table style={tableStyle}>
+        <div className="w-full overflow-x-auto mt-2">
+          <table className="w-full border-collapse rounded-lg overflow-hidden shadow-sm">
             <thead>
-              <tr>
-                <th style={headerCellStyle}>Type</th>
-                <th style={headerCellStyle}>
-                  <div className="flex flex-col items-center -mb-1">
+              <tr className="bg-gray-50">
+                <th className="py-2 px-4 text-left font-semibold text-gray-700 border-b border-gray-200">Type</th>
+                <th className="py-2 px-4 text-center font-semibold text-gray-700 border-b border-gray-200">
+                  <div className="flex flex-col items-center">
                     <span>Primitive</span>
                     <span className={`text-xs text-gray-500 h-3 leading-3 ${showSizes ? 'opacity-100' : 'opacity-0'}`}>
                       (sizes)
                     </span>
                   </div>
                 </th>
-                <th style={headerCellStyle}>
-                  <div className="flex flex-col items-center -mb-1">
+                <th className="py-2 px-4 text-center font-semibold text-gray-700 border-b border-gray-200">
+                  <div className="flex flex-col items-center">
                     <span>Loop</span>
                     <span className={`text-xs text-gray-500 h-3 leading-3 ${showSizes ? 'opacity-100' : 'opacity-0'}`}>
                       (sizes)
@@ -486,42 +388,48 @@ const InfoPanel = ({
                 const primitiveData = dimTypes.primitive[primitiveKey] || [];
                 const loopData = dimTypes.loop[loopKey] || [];
 
+                // Map CMNK types to their colors
+                const typeColors = {
+                  'C': 'text-[#62c8d3]',
+                  'M': 'text-[#007191]',
+                  'N': 'text-[#d31f11]',
+                  'K': 'text-[#b2df8a]'
+                };
+
                 return (
-                  <tr key={type} style={{ backgroundColor: index % 2 === 0 ? '#f9f9f9' : 'white' }}>
-                    <td style={cellStyle}>{type}</td>
-                    <td style={cellStyle}>
-                      <div style={cellContentStyle}>
-                        <div className="relative w-full">
-                          <div
-                            className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${showSizes ? 'opacity-0 transform -translate-y-2' : 'opacity-100 transform translate-y-0'
-                              }`}
-                          >
-                            {primitiveData.join(', ') || '-'}
-                          </div>
-                          <div
-                            className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${showSizes ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-2'
-                              }`}
-                          >
-                            {calculateSize(primitiveData)}
-                          </div>
+                  <tr key={type} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                    <td className="py-2 px-3 border-b border-gray-100">
+                      <span className={`font-semibold ${typeColors[type]}`}>{type}</span>
+                    </td>
+                    <td className="border-gray-100 text-center relative">
+                      <div className="relative w-full h-full flex items-center justify-center min-h-[2rem]">
+                        <div
+                          className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${showSizes ? 'opacity-0 transform -translate-y-2' : 'opacity-100 transform translate-y-0'
+                            }`}
+                        >
+                          <span className="text-gray-700">{primitiveData.join(', ') || '-'}</span>
+                        </div>
+                        <div
+                          className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${showSizes ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-2'
+                            }`}
+                        >
+                          <span className="text-gray-700">{calculateSize(primitiveData)}</span>
                         </div>
                       </div>
                     </td>
-                    <td style={cellStyle}>
-                      <div style={cellContentStyle}>
-                        <div className="relative w-full">
-                          <div
-                            className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${showSizes ? 'opacity-0 transform -translate-y-2' : 'opacity-100 transform translate-y-0'
-                              }`}
-                          >
-                            {loopData.join(', ') || '-'}
-                          </div>
-                          <div
-                            className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${showSizes ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-2'
-                              }`}
-                          >
-                            {calculateSize(loopData)}
-                          </div>
+                    <td className="border-gray-100 text-center relative">
+                      <div className="relative w-full h-full flex items-center justify-center min-h-[2rem]">
+                        <div
+                          className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${showSizes ? 'opacity-0 transform -translate-y-2' : 'opacity-100 transform translate-y-0'
+                            }`}
+                        >
+                          <span className="text-gray-700">{loopData.join(', ') || '-'}</span>
+                        </div>
+                        <div
+                          className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${showSizes ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-2'
+                            }`}
+                        >
+                          <span className="text-gray-700">{calculateSize(loopData)}</span>
                         </div>
                       </div>
                     </td>

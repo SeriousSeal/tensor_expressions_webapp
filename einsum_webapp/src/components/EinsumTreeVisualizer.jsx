@@ -837,13 +837,13 @@ const EinsumTreeVisualizer = ({ initialExpression, initialSizes }) => {
               />
               <button
                 onClick={() => parseInput(einsumExpression)}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                className="px-5 py-2 bg-[#1e3a5f] text-white rounded-md transition-all duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#61dafb] focus:ring-offset-2"
               >
                 Parse
               </button>
               <button
                 onClick={handleShare}
-                className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
+                className="px-5 py-2 bg-[#282c34] text-white rounded-md transition-all duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#61dafb] focus:ring-offset-2"
               >
                 Share
               </button>

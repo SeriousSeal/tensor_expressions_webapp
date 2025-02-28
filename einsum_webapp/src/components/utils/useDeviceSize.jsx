@@ -6,20 +6,36 @@ import { useState, useEffect } from 'react';
  */
 const useDeviceSize = () => {
     /**
-     * Calculates effective width and device type based on screen size and device pixel ratio
-     * @returns {Object} Object containing width and device type flags
+     * Calculates effective width and device type based on screen size, device pixel ratio and features
+     * @returns {Object} Object containing width, height and device type flags
      */
     const getEffectiveWidth = () => {
         const effectiveWidth = window.innerWidth;
         const effectiveHeight = window.innerHeight;
+        const pixelRatio = window.devicePixelRatio || 1;
 
-        // Use standard breakpoints, regardless of DPR
+        // Check for touch capability as an indicator for mobile/tablet
+        const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+        // Use media queries for more accurate device detection
+        const isNarrowScreen = window.matchMedia('(max-width: 480px)').matches;
+        const isMediumScreen = window.matchMedia('(min-width: 481px) and (max-width: 1024px)').matches;
+        const isCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
+
+        // Consider both screen size and interaction mode
+        const isMobile = isNarrowScreen || (hasTouch && isCoarsePointer && effectiveWidth <= 600);
+        const isTablet = isMediumScreen ||
+            (hasTouch && effectiveWidth <= 1024 && !isMobile);
+        const isDesktop = !isMobile && !isTablet;
+
         return {
             width: effectiveWidth,
             height: effectiveHeight,
-            isMobile: effectiveWidth <= 480,
-            isTablet: effectiveWidth > 480 && effectiveWidth <= 1024,
-            isDesktop: effectiveWidth > 1024
+            pixelRatio,
+            hasTouch,
+            isMobile,
+            isTablet,
+            isDesktop
         };
     };
 
@@ -43,18 +59,19 @@ const useDeviceSize = () => {
      * @returns {Object} Object containing panel dimensions and styling parameters
      */
     const getInfoPanelDimensions = () => {
-        const { width, height } = dimensions;
+        const { width, height, pixelRatio, isMobile, isTablet } = dimensions;
 
-        // Use a more subtle scaling factor with less aggressive changes
+        // Adjust for high-DPI displays by scaling relative to pixel density
         const baseWidth = 1440; // Reference width
-        // Cap the scaling factor to avoid extreme scaling on very large or small screens
-        const scaleFactor = Math.min(Math.max(width / baseWidth, 0.85), 1.1);
+        // Normalize scaling based on both screen size and pixel ratio
+        const normalizedWidth = width / pixelRatio;
+        const scaleFactor = Math.min(Math.max(normalizedWidth / (baseWidth / 1.5), 0.85), 1.1);
 
-        if (dimensions.isMobile) {
+        if (isMobile) {
             const panelWidth = Math.min(320, width * 0.92);
             return {
                 panelWidth,
-                fontSize: 14,  // Use fixed font sizes instead of aggressive scaling
+                fontSize: 14 * Math.min(pixelRatio * 0.85, 1.1),
                 padding: 10,
                 showMiniFlow: true,
                 miniFlow: {
@@ -62,17 +79,18 @@ const useDeviceSize = () => {
                     height: 130,
                     nodeWidth: 90,
                     nodeHeight: 28,
-                    fontSize: 12,
-                    letterSize: 14
+                    fontSize: Math.max(11, 12 / (pixelRatio * 0.9)),
+                    letterSize: Math.max(13, 14 / (pixelRatio * 0.9))
                 }
             };
         }
 
-        if (dimensions.isTablet) {
+        if (isTablet) {
+            // Tablet should have larger elements despite potentially high resolution
             const panelWidth = Math.min(340, width * 0.7);
             return {
                 panelWidth,
-                fontSize: 14,
+                fontSize: 14 * Math.min(pixelRatio * 0.8, 1.1),
                 padding: 5,
                 showMiniFlow: true,
                 miniFlow: {
@@ -80,8 +98,8 @@ const useDeviceSize = () => {
                     height: 150,
                     nodeWidth: 110,
                     nodeHeight: 30,
-                    fontSize: 14,
-                    letterSize: 15
+                    fontSize: Math.max(13, 14 / (pixelRatio * 0.9)),
+                    letterSize: Math.max(14, 15 / (pixelRatio * 0.9))
                 }
             };
         }
@@ -90,7 +108,7 @@ const useDeviceSize = () => {
         const panelWidth = Math.min(360, width * 0.5);
         return {
             panelWidth,
-            fontSize: 14, // Keep base font size constant
+            fontSize: 14,
             padding: 10,
             showMiniFlow: true,
             miniFlow: {
@@ -104,7 +122,7 @@ const useDeviceSize = () => {
         };
     };
 
-    return { ...dimensions, getInfoPanelDimensions, isTablet: dimensions.isTablet };
+    return { ...dimensions, getInfoPanelDimensions };
 };
 
 export default useDeviceSize;

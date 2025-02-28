@@ -641,17 +641,12 @@ const Flow = ({
    * Handle panel close more carefully, preserving state
    */
   const handlePanelClose = useCallback(() => {
-    // Hide the panel but preserve the tree state
     setPanelVisible(false);
-
-    // We need to fully reset UI state when manually closing panel
     setUiState(prevState => ({
       ...prevState,
       hoveredNode: null,
-      selectedNode: null  // Clear selectedNode so hover can work again
+      selectedNode: null
     }));
-
-    // Keep lastSelectedNodeId in treeState for potential reference
   }, []);
 
   /* === Effects === */
@@ -693,11 +688,22 @@ const Flow = ({
   }, []);
 
   const toggleMetricType = useCallback(() => {
-    setUiState(prevState => ({
-      ...prevState,
-      showOperations: true, // Ensure percentages are shown when switching metrics
-      metricType: prevState.metricType === 'operations' ? 'tensorSize' : 'operations'
-    }));
+    setUiState(prevState => {
+      // If metrics are not currently shown, just show them without switching type
+      if (!prevState.showOperations) {
+        return {
+          ...prevState,
+          showOperations: true
+        };
+      }
+
+      // If metrics are already shown, switch the type
+      return {
+        ...prevState,
+        showOperations: true, // Ensure percentages remain visible
+        metricType: prevState.metricType === 'operations' ? 'tensorSize' : 'operations'
+      };
+    });
   }, []);
 
   /* === Render === */

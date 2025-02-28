@@ -75,11 +75,10 @@ const TensorNode = React.memo(({
         if (isDragging) return;
         if (e.touches.length > 1) return;
 
-        // Close any other open panel before opening a new one
+        // Reset global state tracking when a new touch starts
         if (activeNodeIndicesPanel && activeNodeIndicesPanel !== id) {
+            // Force close the previous tooltip first
             activeNodeIndicesPanel = null;
-            setShowTooltip(false);
-            return;
         }
 
         isTouchActiveRef.current = true;
@@ -93,6 +92,12 @@ const TensorNode = React.memo(({
 
     const handleTouchEnd = (e) => {
         if (!isTouchActiveRef.current) return;
+
+        // Add a small delay before resetting to handle panel transitions
+        setTimeout(() => {
+            isTouchActiveRef.current = false;
+        }, 50);
+
         e.preventDefault();
         e.stopPropagation();
     };
@@ -112,6 +117,16 @@ const TensorNode = React.memo(({
             }
         };
     }, [id]);
+
+    // Force reset state when indices change
+    useEffect(() => {
+        return () => {
+            // When component unmounts or indices change, reset state
+            if (activeNodeIndicesPanel === id) {
+                activeNodeIndicesPanel = null;
+            }
+        };
+    }, [id, indices]);
 
     return (
         <div

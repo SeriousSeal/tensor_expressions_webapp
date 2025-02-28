@@ -244,12 +244,12 @@ const InfoPanel = ({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      {/* Modern header with better alignment */}
       <div className="flex items-center justify-between mb-1 pb-2 border-b border-gray-100">
-        <h3 className="text-xl font-semibold text-gray-800">Contraction Info</h3>
+        <h3 className="text-xl font-semibold text-gray-800">
+          Contraction Info {isTablet && "(Tablet Mode)"}
+        </h3>
 
         <div className="flex items-center gap-3">
-          {/* Modern toggle switch */}
           <div className="flex items-center gap-2">
             <span className="text-xs text-gray-500 font-medium">
               {showSizes ? "Sizes" : "Indices"}
@@ -268,7 +268,6 @@ const InfoPanel = ({
             </label>
           </div>
 
-          {/* Modern close button */}
           <button
             className="rounded-full p-1.5 text-gray-500 hover:bg-gray-100 
                       hover:text-gray-700 transition-colors focus:outline-none 
@@ -356,7 +355,6 @@ const InfoPanel = ({
         )}
       </div>
 
-      {/* Modern table design */}
       {!isEmptyDimTypes && (
         <div className="w-full overflow-x-auto mt-2">
           <table className="w-full border-collapse rounded-lg overflow-hidden shadow-sm">

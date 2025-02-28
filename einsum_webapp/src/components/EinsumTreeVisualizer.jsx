@@ -730,35 +730,40 @@ const EinsumTreeVisualizer = ({ initialExpression, initialSizes }) => {
 
   // ============= Render =============
   return (
-    <div ref={containerRef} className="h-screen bg-gray-50">
-      <PanelGroup direction="horizontal" className="h-full">
+    <div ref={containerRef} className="h-screen bg-gray-50 overflow-hidden">
+      <PanelGroup direction="horizontal" className="h-full overflow-hidden">
         <Panel defaultSize={60} minSize={getMinSizePercentage(350)}>
           <div className="h-full border border-gray-200 rounded-lg overflow-hidden shadow-lg">
-            <PanelGroup direction="vertical">
+            <PanelGroup direction="vertical" className="h-full overflow-hidden">
               <Panel defaultSize={70} minSize={10}>
-                <ReactFlowProvider>
-                  <Flow
-                    nodes={nodes1}
-                    edges={edges1}
-                    onNodesChange={onNodesChange1}
-                    onEdgesChange={onEdgesChange1}
-                    onConnect={onConnect1}
-                    onNodeClick={onNodeClick}
-                    tree={tree}
-                    indexSizes={indexSizes}
-                    totalOperations={totalOperations}
-                    fitViewFunction={(fn) => (fitViewFunctions.current.tree1 = fn)}
-                    handleOptionClick={handleOptionClick}
-                    swapChildren={swapChildren}
-                    recalculateTreeAndOperations={recalculateTreeAndOperations}
-                    addPermutationNode={addPermutationNode}
-                    removePermutationNode={removePermutationNode}
-                  />
-                </ReactFlowProvider>
+                <div className="h-full overflow-hidden">
+                  <ReactFlowProvider>
+                    <Flow
+                      nodes={nodes1}
+                      edges={edges1}
+                      onNodesChange={onNodesChange1}
+                      onEdgesChange={onEdgesChange1}
+                      onConnect={onConnect1}
+                      onNodeClick={onNodeClick}
+                      tree={tree}
+                      indexSizes={indexSizes}
+                      totalOperations={totalOperations}
+                      fitViewFunction={(fn) => (fitViewFunctions.current.tree1 = fn)}
+                      handleOptionClick={handleOptionClick}
+                      swapChildren={swapChildren}
+                      recalculateTreeAndOperations={recalculateTreeAndOperations}
+                      addPermutationNode={addPermutationNode}
+                      removePermutationNode={removePermutationNode}
+                    />
+                  </ReactFlowProvider>
+                </div>
               </Panel>
               <CustomPanelResizeHandle />
               <Panel minSize={10}>
-                <div className="p-4 bg-white rounded-lg shadow-lg mb-4 h-full overflow-y-auto">
+                <div
+                  className="p-4 bg-white rounded-lg shadow-lg h-full overflow-auto"
+                  style={{ touchAction: 'pan-y', overscrollBehavior: 'contain' }}
+                >
                   <div className="flex flex-col">
                     <div className="flex items-center mb-4">
                       <div className="mr-4 flex-1">
@@ -826,34 +831,41 @@ const EinsumTreeVisualizer = ({ initialExpression, initialSizes }) => {
         </Panel>
         <CustomPanelResizeHandle />
         <Panel minSize={getMinSizePercentage(420)}>
-          <div className="p-6 h-full overflow-auto bg-white rounded-lg shadow-lg">
-            <div className="flex items-center gap-2 mb-6">
-              <input
-                type="text"
-                placeholder="Enter einsum tree"
-                value={einsumExpression}
-                onChange={handleEinsumInputChange}
-                className="flex-grow p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button
-                onClick={() => parseInput(einsumExpression)}
-                className="px-5 py-2 bg-[#1e3a5f] text-white rounded-md transition-all duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#61dafb] focus:ring-offset-2"
-              >
-                Parse
-              </button>
-              <button
-                onClick={handleShare}
-                className="px-5 py-2 bg-[#282c34] text-white rounded-md transition-all duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#61dafb] focus:ring-offset-2"
-              >
-                Share
-              </button>
+          <div className="h-full overflow-hidden flex flex-col bg-white rounded-lg shadow-lg">
+            <div className="p-6 flex-shrink-0">
+              <div className="flex items-center gap-2 mb-6">
+                <input
+                  type="text"
+                  placeholder="Enter einsum tree"
+                  value={einsumExpression}
+                  onChange={handleEinsumInputChange}
+                  className="flex-grow p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                  onClick={() => parseInput(einsumExpression)}
+                  className="px-5 py-2 bg-[#1e3a5f] text-white rounded-md transition-all duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#61dafb] focus:ring-offset-2"
+                >
+                  Parse
+                </button>
+                <button
+                  onClick={handleShare}
+                  className="px-5 py-2 bg-[#282c34] text-white rounded-md transition-all duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#61dafb] focus:ring-offset-2"
+                >
+                  Share
+                </button>
+              </div>
             </div>
-            <HistoryPanel
-              history={history}
-              onSelectTree={selectTreeFromHistory}
-              onClear={handleClearHistory}
-            />
-            <IndexSizeInput indexSizes={indexSizes} setIndexSizes={setIndexSizes} onUpdate={recalculateOperations} />
+            <div
+              className="flex-grow overflow-auto p-6 pt-0"
+              style={{ touchAction: 'pan-y', overscrollBehavior: 'contain' }}
+            >
+              <HistoryPanel
+                history={history}
+                onSelectTree={selectTreeFromHistory}
+                onClear={handleClearHistory}
+              />
+              <IndexSizeInput indexSizes={indexSizes} setIndexSizes={setIndexSizes} onUpdate={recalculateOperations} />
+            </div>
           </div>
         </Panel>
       </PanelGroup>

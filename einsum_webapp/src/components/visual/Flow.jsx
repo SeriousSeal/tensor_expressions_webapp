@@ -240,8 +240,12 @@ const Flow = ({
    */
   const [treeState, setTreeState] = useState({
     connectedNodes: { value: [], left: null, right: null },
-    panelPosition: { x: 0, y: 0 }
+    panelPosition: { x: 0, y: 0 },
+    lastSelectedNodeId: null // Add this to track last selected node
   });
+
+  // Add state to track if panel is visible
+  const [isPanelVisible, setPanelVisible] = useState(false);
 
   /* === Refs === */
   const refs = {
@@ -421,8 +425,23 @@ const Flow = ({
       onHighlightNode(node);
     } else {
       const connectedNodes = findConnectedNodes(tree.getRoot(), node);
-      setUiState(prevState => ({ ...prevState, selectedNode: node }));
-      setTreeState(prevState => ({ ...prevState, connectedNodes }));
+
+      // Set panel to visible when node is clicked
+      setPanelVisible(true);
+
+      setUiState(prevState => ({
+        ...prevState,
+        selectedNode: node,
+        // Clear hovered node to prevent state conflicts
+        hoveredNode: null
+      }));
+
+      setTreeState(prevState => ({
+        ...prevState,
+        connectedNodes,
+        lastSelectedNodeId: node.id // Track which node was selected
+      }));
+
       if (propOnNodeClick) {
         propOnNodeClick(event, node);
       }
@@ -606,6 +625,22 @@ const Flow = ({
     }
   }, [swapChildren, findConnectedNodes]);
 
+  /**
+   * Handle panel close more carefully, preserving state
+   */
+  const handlePanelClose = useCallback(() => {
+    // Hide the panel but preserve the selected node data
+    setPanelVisible(false);
+
+    // We only reset UI hover state, not selection state
+    setUiState(prevState => ({
+      ...prevState,
+      hoveredNode: null
+    }));
+
+    // Keep the lastSelectedNodeId for potential reopening
+  }, []);
+
   /* === Effects === */
 
   /**
@@ -653,6 +688,7 @@ const Flow = ({
   }, []);
 
   /* === Render === */
+  // Modified to use isPanelVisible
   const activeNode = uiState.selectedNode || uiState.hoveredNode;
 
   return (
@@ -729,21 +765,19 @@ const Flow = ({
 
         </Controls>
         <Background variant="dots" gap={12} size={1} />
-        {!uiState.highlightMode && activeNode && (
+        {!uiState.highlightMode && isPanelVisible && activeNode && (
           <Panel position="top-left">
             <div
               onMouseEnter={handlePanelMouseEnter}
               onMouseLeave={handlePanelMouseLeave}
             >
               <InfoPanel
-                key={`infopanel-${activeNode.id}`}
-                node={activeNode ?? uiState.hoveredNode}
+                // Use a composite key that includes the lastSelectedNodeId to prevent unmounting
+                key={`infopanel-${treeState.lastSelectedNodeId || activeNode.id}`}
+                node={activeNode}
                 connectedNodes={treeState.connectedNodes}
                 setConnectedNodes={setTreeState}
-                onClose={() => {
-                  setUiState(prevState => ({ ...prevState, selectedNode: null, hoveredNode: null }));
-                  setTreeState(prevState => ({ ...prevState, connectedNodes: [] }));
-                }}
+                onClose={handlePanelClose}
                 initialPosition={{ x: 12, y: 8 }}
                 indexSizes={indexSizes}
                 showSizes={uiState.showSizes}

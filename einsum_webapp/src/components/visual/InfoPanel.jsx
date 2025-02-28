@@ -57,6 +57,13 @@ const InfoPanel = ({
     }
   }, [connectedNodes, indexSizes]);
 
+  // Force refresh panel when node changes to ensure proper display
+  useEffect(() => {
+    if (node && node.id) {
+      setIsDragging(false); // Reset drag state when node changes
+    }
+  }, [node]);
+
   const dimTypes = useMemo(() => {
     if (connectedNodes.right)
       return dimensionTypes(connectedNodes.value, connectedNodes.left?.value, connectedNodes.right?.value);

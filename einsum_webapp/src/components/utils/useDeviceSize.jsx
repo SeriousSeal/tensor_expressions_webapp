@@ -85,37 +85,18 @@ const useDeviceSize = () => {
             };
         }
 
-        if (isTablet) {
-            // Tablet should have larger elements despite potentially high resolution
-            const panelWidth = Math.min(340, width * 0.7);
-            return {
-                panelWidth,
-                fontSize: 14 * Math.min(pixelRatio * 0.8, 1.1),
-                padding: 5,
-                showMiniFlow: true,
-                miniFlow: {
-                    width: 280,
-                    height: 150,
-                    nodeWidth: 110,
-                    nodeHeight: 30,
-                    fontSize: Math.max(13, 14 / (pixelRatio * 0.9)),
-                    letterSize: Math.max(14, 15 / (pixelRatio * 0.9))
-                }
-            };
-        }
-
         // Desktop - apply subtle scaling that won't dramatically change proportions
-        const panelWidth = Math.min(360, width * 0.5);
+        const panelWidth = Math.min(340, width * 0.7);
         return {
             panelWidth,
             fontSize: 14,
-            padding: 10,
+            padding: 5,
             showMiniFlow: true,
             miniFlow: {
-                width: Math.max(280, panelWidth * 0.85),
-                height: 160,
+                width: 280,
+                height: 150,
                 nodeWidth: 110,
-                nodeHeight: 32,
+                nodeHeight: 30,
                 fontSize: 14,
                 letterSize: 18
             }

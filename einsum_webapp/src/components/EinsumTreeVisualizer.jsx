@@ -733,7 +733,7 @@ const EinsumTreeVisualizer = ({ initialExpression, initialSizes }) => {
     <div ref={containerRef} className="h-screen bg-gray-50 overflow-hidden">
       <PanelGroup direction="horizontal" className="h-full overflow-hidden">
         <Panel defaultSize={60} minSize={getMinSizePercentage(350)}>
-          <div className="h-full border border-gray-200 rounded-lg overflow-hidden shadow-lg">
+          <div className="h-full border border-gray-200 overflow-hidden shadow-lg">
             <PanelGroup direction="vertical" className="h-full overflow-hidden">
               <Panel defaultSize={70} minSize={10}>
                 <div className="h-full overflow-hidden">
@@ -761,7 +761,7 @@ const EinsumTreeVisualizer = ({ initialExpression, initialSizes }) => {
               <CustomPanelResizeHandle />
               <Panel minSize={10}>
                 <div
-                  className="p-4 bg-white rounded-lg shadow-lg h-full overflow-auto"
+                  className="p-4 bg-white shadow-lg h-full overflow-auto"
                   style={{ touchAction: 'pan-y', overscrollBehavior: 'contain' }}
                 >
                   <div className="flex flex-col">
@@ -831,7 +831,7 @@ const EinsumTreeVisualizer = ({ initialExpression, initialSizes }) => {
         </Panel>
         <CustomPanelResizeHandle />
         <Panel minSize={getMinSizePercentage(420)}>
-          <div className="h-full overflow-hidden flex flex-col bg-white rounded-lg shadow-lg">
+          <div className="h-full overflow-hidden flex flex-col bg-white shadow-lg">
             <div className="p-6 flex-shrink-0">
               <div className="flex items-center gap-2 mb-6">
                 <input

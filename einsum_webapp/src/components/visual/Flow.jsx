@@ -454,12 +454,12 @@ const Flow = ({
    * @param {Object} node - Hovered node
    */
   const handleNodeMouseEnter = useCallback((event, node) => {
-    if (!uiState.hoverEnabled || uiState.selectedNode) return;
-    if (uiState.selectedNode && !node.data.left) return;
-
+    if (!uiState.hoverEnabled) return;
+    if (uiState.selectedNode) return;
 
     clearTimeout(refs.timeout.current);
     const connectedNodes = findConnectedNodes(tree.getRoot(), node);
+    setPanelVisible(true);
 
     setUiState(prevState => ({ ...prevState, hoveredNode: node }));
     setTreeState(prevState => ({ ...prevState, connectedNodes }));
@@ -471,6 +471,7 @@ const Flow = ({
   const handleNodeMouseLeave = useCallback(() => {
     refs.timeout.current = setTimeout(() => {
       if (!uiState.selectedNode) {
+        setPanelVisible(false);
         setUiState(prevState => ({ ...prevState, hoveredNode: null }));
         setTreeState(prevState => ({ ...prevState, connectedNodes: [] }));
       }
@@ -491,12 +492,23 @@ const Flow = ({
    * Toggles the hover behavior
    */
   const toggleHoverBehavior = useCallback(() => {
-    setUiState(prevState => ({ ...prevState, hoverEnabled: !prevState.hoverEnabled }));
-    if (uiState.hoverEnabled && !uiState.selectedNode) {
-      setUiState(prevState => ({ ...prevState, hoveredNode: null }));
+    setUiState(prevState => {
+      const newHoverEnabled = !prevState.hoverEnabled;
+      if (!newHoverEnabled) {
+        return {
+          ...prevState,
+          hoverEnabled: false,
+          hoveredNode: null
+        };
+      }
+
+      return { ...prevState, hoverEnabled: true };
+    });
+
+    if (!uiState.hoverEnabled && !uiState.selectedNode) {
       setTreeState(prevState => ({ ...prevState, connectedNodes: [] }));
     }
-  }, [uiState.hoverEnabled, uiState.selectedNode]);
+  }, [uiState.selectedNode]);
 
   /**
    * Toggles the highlight mode

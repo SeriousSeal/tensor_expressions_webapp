@@ -641,16 +641,17 @@ const Flow = ({
    * Handle panel close more carefully, preserving state
    */
   const handlePanelClose = useCallback(() => {
-    // Hide the panel but preserve the selected node data
+    // Hide the panel but preserve the tree state
     setPanelVisible(false);
 
-    // We only reset UI hover state, not selection state
+    // We need to fully reset UI state when manually closing panel
     setUiState(prevState => ({
       ...prevState,
-      hoveredNode: null
+      hoveredNode: null,
+      selectedNode: null  // Clear selectedNode so hover can work again
     }));
 
-    // Keep the lastSelectedNodeId for potential reopening
+    // Keep lastSelectedNodeId in treeState for potential reference
   }, []);
 
   /* === Effects === */

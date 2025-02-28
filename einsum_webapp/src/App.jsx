@@ -53,7 +53,7 @@ function App() {
           </svg>
         </a>
       </header>
-      <main>
+      <main className="App-content">
         <EinsumTreeVisualizer
           initialExpression={initialExpression}
           initialSizes={initialSizes}

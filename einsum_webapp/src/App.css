@@ -6,12 +6,16 @@ body,
   margin: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  /* Prevent double scrollbars */
 }
 
 .App {
-  flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
 }
 
 main {
@@ -35,6 +39,23 @@ header.App-header {
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
   position: relative;
   overflow: hidden;
+}
+
+/* Style the header with a fixed height */
+.App-header {
+  padding: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  /* Add other styles you have for your header */
+}
+
+/* Ensure content area takes remaining space and scrolls properly */
+.App-content {
+  flex: 1;
+  overflow-y: auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Add decorative elements */

@@ -326,13 +326,10 @@ class StandardDimensionClassifier extends BaseDimensionClassifier {
         // Check all dimension types
         for (const [dimType, mapping] of Object.entries(DIM_TYPE_RELATIONS)) {
             if (this.isInDimension(element, mapping.primitive, mapping.loop)) {
-                console.log(`Element ${element} is already in dimension ${dimType}`);
                 if (this.acceptDimForPrimitive(dimType)) {
-                    console.log(`Accepting element ${element} for dimension ${dimType}`);
                     this.dimType = dimType;
                 }
                 else if (this.state === DimState.PRIMITIVE) {
-                    console.log(`Transitioning to next dimension from ${dimType}`);
                     const currentIndex = PRIMITIVE_DIM_ORDER.indexOf(this.dimType);
                     this.dimType = PRIMITIVE_DIM_ORDER[currentIndex + 1];
                     this.state = DimState.LOOP;
@@ -341,11 +338,9 @@ class StandardDimensionClassifier extends BaseDimensionClassifier {
             }
         }
         if (this.acceptDimForPrimitive(DimType.KB)) {
-            console.log(`Accepting element ${element} for dimension ${DimType.KB}`);
             this.dimType = DimType.KB;
         }
         else if (this.state === DimState.PRIMITIVE) {
-            console.log(`Transitioning to next dimension from ${this.dimType} with element ${element}`);
             const currentIndex = PRIMITIVE_DIM_ORDER.indexOf(this.dimType);
             this.dimType = PRIMITIVE_DIM_ORDER[currentIndex + 1];
             this.state = DimState.LOOP;

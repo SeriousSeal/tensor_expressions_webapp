@@ -734,14 +734,14 @@ const Flow = ({
         <Controls>
           <ControlButton
             onClick={handleControlButtonClick}
-            title="Change Layout Options"
+            title="change layout"
           >
             <TbLayoutDistributeHorizontal />
           </ControlButton>
           <ControlButton
             onClick={toggleHoverBehavior}
             className={`hover - toggle ${uiState.hoverEnabled ? 'active' : ''} `}
-            title={uiState.hoverEnabled ? 'Disable Hover' : 'Enable Hover'}
+            title={uiState.hoverEnabled ? 'disable Hover' : 'enable Hover'}
           >
             {uiState.hoverEnabled ? <TbEyeCheck /> : <TbEyeCancel />}
           </ControlButton>
@@ -749,7 +749,7 @@ const Flow = ({
             <ControlButton
               onClick={toggleMetricType}
               className={`metric-toggle ${uiState.metricType === 'tensorSize' ? 'active' : ''}`}
-              title={`Show ${uiState.metricType === 'tensorSize' ? 'Operation' : 'Memory'} Percentages`}
+              title={`show ${uiState.metricType === 'tensorSize' ? 'operation' : 'memory'} percentages`}
             >
               {uiState.metricType === 'tensorSize' ? <TbBox /> : <TbPercentage />}
             </ControlButton>
@@ -757,7 +757,7 @@ const Flow = ({
               <ControlButton
                 onClick={toggleOperations}
                 className={`operations-toggle ${uiState.showOperations ? 'active' : ''}`}
-                title={uiState.showOperations ? 'Hide Percentages' : 'Show Percentages'}
+                title={uiState.showOperations ? 'hide percentages' : 'show percentages'}
               >
                 {uiState.showOperations ? <TbEyeCheck /> : <TbEyeCancel />}
               </ControlButton>
@@ -767,14 +767,14 @@ const Flow = ({
             <ControlButton
               onClick={toggleHighlightMode}
               className={`highlight-mode ${uiState.highlightMode ? 'active' : ''}`}
-              title={uiState.highlightMode ? 'Exit Highlight Mode' : 'Enter Highlight Mode'}
+              title={uiState.highlightMode ? 'exit highlight mode' : 'enter highlight mode'}
             >
               <TbHighlight />
             </ControlButton>
             {uiState.highlightMode && (
               <ControlButton
                 onClick={handleCreateHighlightShare}
-                title="Create Share URL from Highlighted Nodes"
+                title="create share URL from highlighted nodes"
               >
                 <TbCheck />
               </ControlButton>

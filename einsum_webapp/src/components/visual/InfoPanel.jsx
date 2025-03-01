@@ -296,13 +296,6 @@ const InfoPanel = ({
 
       {/* Flow tree visualization */}
       <div className="flex items-start justify-center relative overflow-hidden">
-        <div className={`flex flex-col justify-start items-center mx-3 mt-2 ${isTablet ? 'gap-2' : 'gap-3'}`}>
-          <span className="text-[#62c8d3] font-bold text-xl">C</span>
-          <span className="text-[#007191] font-bold text-xl">M</span>
-          <span className="text-[#d31f11] font-bold text-xl">N</span>
-          <span className="text-[#b2df8a] font-bold text-xl">K</span>
-        </div>
-
         <div className="flex flex-col justify-start items-center mt-2">
           <SimpleTensorTree
             key={`${connectedNodes.value}-${connectedNodes.left?.value}-${connectedNodes.right?.value}`}
@@ -402,7 +395,7 @@ const InfoPanel = ({
                 return (
                   <tr key={type} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
                     <td className="py-2 px-3 border-b border-gray-100">
-                      <span className={`font-semibold ${typeColors[type]}`}>{type}</span>
+                      <span className={`font-bold text-l ${typeColors[type]}`}>{type}</span>
                     </td>
                     <td className="border-gray-100 text-center relative">
                       <div className="relative w-full h-full flex items-center justify-center min-h-[2rem]">

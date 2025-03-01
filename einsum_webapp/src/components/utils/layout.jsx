@@ -18,12 +18,28 @@ const buildVisualizationTree = (root, faultyNodes = [], layoutOption = 'tree') =
     return 1 + countNodes(node.left) + countNodes(node.right);
   };
 
-  // Calculate total nodes for sizing
-  const totalNodes = countNodes(root);
+  /**
+   * Recursively finds the maximum depth of the tree
+   * @param {Object} node - Current tree node
+   * @param {number} currentDepth - Current depth in the traversal
+   * @returns {number} Maximum depth of the tree
+   */
+  const findMaxDepth = (node, currentDepth = 0) => {
+    if (!node) return currentDepth - 1;
+    const leftDepth = findMaxDepth(node.left, currentDepth + 1);
+    const rightDepth = findMaxDepth(node.right, currentDepth + 1);
+    return Math.max(leftDepth, rightDepth);
+  };
 
-  // Dynamic dimension calculation based on node count
+  // Calculate total nodes for sizing
+  let totalNodes = countNodes(root);
+
+  // Calculate maximum depth for height scaling
+  const maxDepth = findMaxDepth(root);
+
+  // Dynamic dimension calculation based on node count and depth
   const width = Math.max(300, totalNodes * 50);
-  const height = Math.max(140, totalNodes * 40);
+  const height = Math.max(140, maxDepth * 110); // 80 pixels per level gives adequate vertical spacing
 
   // Create d3 hierarchy structure from the expression tree
   const hierarchyRoot = hierarchy(root, d => {

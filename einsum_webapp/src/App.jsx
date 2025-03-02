@@ -3,6 +3,7 @@ import './App.css';
 import EinsumTreeVisualizer from './components/EinsumTreeVisualizer.jsx';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { decompressData } from './components/utils/compression.jsx';
+import { getBaseUrl } from './components/utils/paths.jsx';
 
 function App() {
   const [searchParams] = useSearchParams();
@@ -20,7 +21,7 @@ function App() {
     if (compressedExpression || compressedSizes) {
       // Small delay to ensure data is processed
       setTimeout(() => {
-        navigate('/tensor_expressions_webapp/', { replace: true });
+        navigate(getBaseUrl(), { replace: true });
       }, 100);
     }
   }, [compressedExpression, compressedSizes, navigate]);
